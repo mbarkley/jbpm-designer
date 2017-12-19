@@ -673,7 +673,12 @@ public class VFSRepository implements Repository {
         if (projectPath == null || projectPath.trim().isEmpty()) {
             return "global";
         } else {
-            return projectPath + separator + "global";
+            final String lastChar = String.valueOf(projectPath.charAt(projectPath.length() - 1));
+            if (!separator.equals(lastChar)) {
+                return projectPath + separator + "global";
+            } else {
+                return projectPath + "global";
+            }
         }
     }
 
