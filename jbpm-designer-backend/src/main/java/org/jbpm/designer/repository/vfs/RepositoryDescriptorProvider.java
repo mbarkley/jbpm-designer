@@ -33,6 +33,7 @@ import org.uberfire.io.IOService;
 import org.uberfire.java.nio.file.FileSystem;
 import org.uberfire.java.nio.file.FileSystemNotFoundException;
 import org.uberfire.java.nio.file.Path;
+import org.uberfire.spaces.Space;
 
 @ApplicationScoped
 public class RepositoryDescriptorProvider {
@@ -43,12 +44,12 @@ public class RepositoryDescriptorProvider {
     @Inject
     private RepositoryService repositoryService;
 
-    private Map<String, RepositoryDescriptor> knownRepositories = new ConcurrentHashMap<String, RepositoryDescriptor>();
+    private Map<String, RepositoryDescriptor> knownRepositories = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
 
-        Collection<Repository> active = repositoryService.getRepositories();
+        Collection<Repository> active = repositoryService.getAllRepositoriesFromAllUserSpaces();
         if (active != null) {
             for (org.guvnor.structure.repositories.Repository repo : active) {
                 for (final Branch branch : repo.getBranches()) {
@@ -59,7 +60,8 @@ public class RepositoryDescriptorProvider {
         }
     }
 
-    public RepositoryDescriptor getRepositoryDescriptor(String repositoryAlias,
+    public RepositoryDescriptor getRepositoryDescriptor(Space space,
+                                                        String repositoryAlias,
                                                         String branchName) {
         if (branchName == null) {
             branchName = "master";
@@ -70,7 +72,7 @@ public class RepositoryDescriptorProvider {
         } else if (knownRepositories.size() == 1) {
             return knownRepositories.values().iterator().next();
         } else {
-            Repository repository = repositoryService.getRepository(repositoryAlias);
+            Repository repository = repositoryService.getRepositoryFromSpace(space, repositoryAlias);
             if (repository != null) {
                 return buildAndRegister(repository,
                                         branchName);
